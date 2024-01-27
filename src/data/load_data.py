@@ -1,4 +1,4 @@
-LIBRISPEECH_DIR = '/home/rm2114/rds/rds-altaslp-8YSp2LXTlkY/data/librispeech'
+LIBRISPEECH_DIR = '~/rds/rds-altaslp-8YSp2LXTlkY/data/librispeech'
 
 
 def load_data(core_args):
