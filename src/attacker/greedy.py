@@ -32,14 +32,14 @@ class GreedyAttacker(BaseAttacker):
 
             return prev, word_2_score
 
-        score_no_attack = self.trn_evaluate_uni_attack_seen(data, curr_adv_phrase)
+        score_no_attack = self.trn_evaluate_uni_attack(data, curr_adv_phrase)
         word_2_score = {}
         for word in tqdm(self.word_list):
             if curr_adv_phrase == '':
-                adv_phrase = word + '.'
+                adv_phrase = word
             else:
-                adv_phrase = curr_adv_phrase + ' ' + word + '.'
-            score = self.trn_evaluate_uni_attack_seen(data, adv_phrase)
+                adv_phrase = curr_adv_phrase + ' ' + word
+            score = self.trn_evaluate_uni_attack(data, adv_phrase)
             word_2_score[word] = score
         
         # cache

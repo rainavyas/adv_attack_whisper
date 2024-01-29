@@ -1,4 +1,4 @@
-LIBRISPEECH_DIR = '~/rds/rds-altaslp-8YSp2LXTlkY/data/librispeech'
+LIBRISPEECH_DIR = '/home/vr313/rds/rds-altaslp-8YSp2LXTlkY/data/librispeech'
 
 
 def load_data(core_args):
@@ -11,7 +11,7 @@ def load_data(core_args):
                     }
     '''
     if core_args.data_name == 'librispeech':
-        return _librispeech()
+        return _librispeech('dev_other'), _librispeech('test_other')
 
 
 def _librispeech(sub_dir):
@@ -20,13 +20,18 @@ def _librispeech(sub_dir):
         for noisy audio, set `sub_dir' to dev_other/test_other as dev/test sets
     '''
     audio_transcript_pair_list = []
-    with open(f'{LIBRISPEECH_DIR}/{sub_dir}/audio_ref_pair_list') as fin:
+    with open(f'{LIBRISPEECH_DIR}/{sub_dir}/audio_ref_pair_list', 'r') as fin:
         for line in fin:
             _, audio, ref = line.split(None, 2)
+            ref = ref.rstrip('\n')
+
+            # change audio path as per user
+            audio = audio.replace('rm2114', 'vr313')
+
             sample = {
                     'audio': audio,
                     'ref': ref
                 }
             audio_transcript_pair_list.append(sample)
-                
+    # breakpoint()   
     return audio_transcript_pair_list

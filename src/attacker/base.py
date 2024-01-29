@@ -27,7 +27,7 @@ class BaseAttacker():
 
         if cache_dir is not None:
             # check for cache
-            fpath = f'{cache_dir}/all_comparisons.npy'
+            fpath = f'{cache_dir}/predictions.json'
             if os.path.isfile(fpath) and not force_run:
                 with open(fpath, 'rb') as f:
                     hyps = json.load(f)

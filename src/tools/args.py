@@ -2,7 +2,7 @@ import argparse
 
 def core_args():
     commandLineParser = argparse.ArgumentParser(allow_abbrev=False)
-    commandLineParser.add_argument('--model_name', type=str, default='whisper-large', help='ASR model')
+    commandLineParser.add_argument('--model_name', type=str, default='whisper-small', help='ASR model')
     commandLineParser.add_argument('--gpu_id', type=int, default=0, help='select specific gpu')
     commandLineParser.add_argument('--data_name', type=str, default='librispeech', help='dataset for exps')
     commandLineParser.add_argument('--seed', type=int, default=1, help='select seed')
