@@ -42,7 +42,7 @@ if __name__ == "__main__":
     print(device)
     # Load the data
     train_data, test_data = load_data(core_args)
-    if core_args.eval_train:
+    if attack_args.eval_train:
         test_data = train_data
 
     # Load the model
@@ -56,13 +56,13 @@ if __name__ == "__main__":
     # 1) No attack
     if not attack_args.not_none:
         print('No attack')
-        result = attacker.eval_uni_attack(test_data, adv_phrase='', cache_dir=base_path, force_run=attack_args.force_run)
+        result = attacker.eval_uni_attack(test_data, adv_phrase='', cache_dir=base_path, force_run=attack_args.force_run, do_tqdm=True)
         print(result)
         print()
 
     # 2) Attack
     print('Attack')
-    result = attacker.eval_uni_attack(test_data, adv_phrase=attacker.adv_phrase, cache_dir=attack_base_path, force_run=attack_args.force_run)
+    result = attacker.eval_uni_attack(test_data, adv_phrase=attacker.adv_phrase, cache_dir=attack_base_path, force_run=attack_args.force_run, do_tqdm=True)
     print(result)
     print()
 

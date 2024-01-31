@@ -18,7 +18,7 @@ def attack_args():
     commandLineParser.add_argument('--array_word_size', type=int, default=400, help='number of words to test for each array job in greedy attack')
 
     # eval attack args
-    commandLineParser.add_argument('--attack_phrase', type=str, default='greedy-librispeech', help='Specifc adversarial attack phrase to evaluate')
+    commandLineParser.add_argument('--attack_phrase', type=str, default='fwhisper-tiny-greedy-librispeech', help='Specifc adversarial attack phrase to evaluate')
     commandLineParser.add_argument('--num_greedy_phrase_words', type=int, default=-1, help='for greedy phrase select only first k words')
     commandLineParser.add_argument('--force_run', action='store_true', help='Do not load from cache')
     commandLineParser.add_argument('--not_none', action='store_true', help='Do not evaluate the none attack')

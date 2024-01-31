@@ -26,7 +26,8 @@ class WhisperModel:
         '''
             Whisper decoder output here
         '''
-        result = self.model.transcribe(audio, language='en', initial_prompt=decoder_text, verbose=False)
+        # decode_options = {'beam_size':None}
+        result = self.model.transcribe(audio, language='en', initial_prompt=decoder_text)
         segments = []
         for segment in result['segments']:
             segments.append(segment['text'].strip())

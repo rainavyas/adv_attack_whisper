@@ -1,5 +1,6 @@
 import os
 import json
+from tqdm import tqdm
 
 from src.tools.tools import eval_wer
 
@@ -13,12 +14,15 @@ class BaseAttacker():
         self.adv_phrase = self._load_phrase(self.attack_args.attack_phrase)
     
     def _load_phrase(self, phrase_name):
-        if phrase_name=='greedy-librispeech':
-            phrase = ''
+        if phrase_name=='fwhisper-tiny-greedy-librispeech':
+            phrase = 'aonach'
+            return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
+        if phrase_name=='fwhisper-tiny-greedy-librispeech-spelt':
+            phrase = 'A O N A C H'
             return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
     
     
-    def eval_uni_attack(self, data, adv_phrase='', cache_dir=None, force_run=False):
+    def eval_uni_attack(self, data, adv_phrase='', cache_dir=None, force_run=False, do_tqdm=False):
         '''
             Generates predictions with adv_phrase (saves to cache)
             Computes the WER against the references
@@ -29,19 +33,24 @@ class BaseAttacker():
             # check for cache
             fpath = f'{cache_dir}/predictions.json'
             if os.path.isfile(fpath) and not force_run:
-                with open(fpath, 'rb') as f:
+                with open(fpath, 'r') as f:
                     hyps = json.load(f)
                 wer = eval_wer(hyps, refs)
                 return wer
 
         hyps = []
-        for sample in data:
-            hyp = self.model.predict(audio=sample['audio'], decoder_text=adv_phrase)
-            hyps.append(hyp)
+        if do_tqdm:
+            for sample in tqdm(data):
+                hyp = self.model.predict(audio=sample['audio'], decoder_text=adv_phrase)
+                hyps.append(hyp)
+        else:
+            for sample in data:
+                hyp = self.model.predict(audio=sample['audio'], decoder_text=adv_phrase)
+                hyps.append(hyp)
         wer = eval_wer(hyps, refs)
 
         if cache_dir is not None:
-            with open(fpath, 'wb') as f:
+            with open(fpath, 'w') as f:
                 json.dump(hyps, f)
         
         return wer

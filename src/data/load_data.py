@@ -1,3 +1,6 @@
+import os
+import json
+
 LIBRISPEECH_DIR = '/home/vr313/rds/rds-altaslp-8YSp2LXTlkY/data/librispeech'
 
 
@@ -11,7 +14,8 @@ def load_data(core_args):
                     }
     '''
     if core_args.data_name == 'librispeech':
-        return _librispeech('dev_other'), _librispeech('test_other')
+        # create random 100 samples later
+        return select_samples(_librispeech('dev_other')), _librispeech('test_other')
 
 
 def _librispeech(sub_dir):
@@ -32,6 +36,19 @@ def _librispeech(sub_dir):
                     'audio': audio,
                     'ref': ref
                 }
-            audio_transcript_pair_list.append(sample)
-    # breakpoint()   
+            audio_transcript_pair_list.append(sample) 
     return audio_transcript_pair_list
+
+def select_samples(data, samples=80):
+    # load randomly selected samples
+    fpath = 'experiments/sample_inds.txt'
+    if os.path.isfile(fpath):
+        with open(fpath, 'r') as f:
+            inds = json.load(f)
+    else:
+        import random
+        inds = random.sample(range(len(data)), samples)
+        with open(fpath, 'w') as f:
+            json.dump(inds, f)
+    sampled_data = [data[ind] for ind in inds]
+    return sampled_data
