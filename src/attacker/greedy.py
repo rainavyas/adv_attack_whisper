@@ -81,10 +81,11 @@ class GreedyAttacker(BaseAttacker):
                     prev[1]=v
             if pos==1:
                 return best[0], best[1]
-            elif pos==2:
-                return prev[0], prev[1]
             else:
-                print("Not supported pos")
+                # get word a position 'pos'
+                all = [(k,v) for k,v in word_2_score.items()]
+                ranked = sorted(all, key=lambda a: a[1], reverse=True)
+                return ranked[pos-1][0], ranked[pos-1][1]
 
         if os.path.isfile(f'{base_path}/scores.txt'):
             with open(f'{base_path}/scores.txt', 'r') as f:

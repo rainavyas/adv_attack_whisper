@@ -24,6 +24,8 @@ class FastWhisperModel:
             Whisper decoder output here
         '''
         # decode_options = {'beam_size':None}
+        if decoder_text=='':
+            decoder_text = None
         segments, _ = self.model.transcribe(audio, language='en', initial_prompt=decoder_text, beam_size=1)
         text_segments = []
         for segment in list(segments):

@@ -20,6 +20,9 @@ class BaseAttacker():
         if phrase_name=='fwhisper-tiny-greedy-librispeech-spelt':
             phrase = 'A O N A C H'
             return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
+        if phrase_name=='fwhisper-tiny-greedy3-librispeech':
+            phrase = 'tocologist'
+            return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
     
     
     def eval_uni_attack(self, data, adv_phrase='', cache_dir=None, force_run=False, do_tqdm=False):
