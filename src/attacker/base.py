@@ -3,28 +3,15 @@ import json
 from tqdm import tqdm
 
 from src.tools.tools import eval_wer
+from src.attacker.base import BaseAttacker
 
-class BaseAttacker():
+class NMTBaseAttacker(BaseAttacker):
     '''
     Base class for adversarial attacks on LLM evaluation systems
     '''
     def __init__(self, attack_args, model):
-        self.attack_args = attack_args
-        self.model = model
-        self.adv_phrase = self._load_phrase(self.attack_args.attack_phrase)
-    
-    def _load_phrase(self, phrase_name):
-        if phrase_name=='fwhisper-tiny-greedy-librispeech':
-            phrase = 'aonach'
-            return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
-        if phrase_name=='fwhisper-tiny-greedy-librispeech-spelt':
-            phrase = 'A O N A C H'
-            return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
-        if phrase_name=='fwhisper-tiny-greedy3-librispeech':
-            phrase = 'tocologist'
-            return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
-    
-    
+        BaseAttacker.__init__(self, attack_args, model)
+
     def eval_uni_attack(self, data, adv_phrase='', cache_dir=None, force_run=False, do_tqdm=False):
         '''
             Generates predictions with adv_phrase (saves to cache)
