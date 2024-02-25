@@ -56,13 +56,13 @@ if __name__ == "__main__":
     # 1) No attack
     if not attack_args.not_none:
         print('No attack')
-        result = attacker.eval_uni_attack(test_data, adv_phrase='', cache_dir=base_path, force_run=attack_args.force_run, do_tqdm=True)
+        result = attacker.eval_uni_attack(test_data, adv_phrase='', cache_dir=base_path, force_run=attack_args.force_run, do_tqdm=True, perf=True)
         print(result)
         print()
 
     # 2) Attack
     print('Attack')
-    result = attacker.eval_uni_attack(test_data, adv_phrase=attacker.adv_phrase, cache_dir=attack_base_path, force_run=attack_args.force_run, do_tqdm=True)
+    result = attacker.eval_uni_attack(test_data, adv_phrase=attacker.adv_phrase, cache_dir=attack_base_path, force_run=attack_args.force_run, do_tqdm=True, perf=True)
     print(result)
     print()
 

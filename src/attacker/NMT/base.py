@@ -2,34 +2,24 @@ import os
 import json
 from tqdm import tqdm
 
-class BaseAttacker():
+from src.attacker.base import BaseAttacker
+from src.tools.tools import eval_bleu, eval_neg_seq_len
+
+class NMTBaseAttacker(BaseAttacker):
     '''
     Base class for adversarial attacks on LLM evaluation systems
     '''
-    def __init__(self, attack_args, model):
-        self.attack_args = attack_args
-        self.model = model
-        self.adv_phrase = self._load_phrase(self.attack_args.attack_phrase)
-    
-    def _load_phrase(self, phrase_name):
-        if phrase_name=='fwhisper-tiny-greedy-librispeech':
-            phrase = 'aonach'
-            return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
-        if phrase_name=='fwhisper-tiny-greedy-librispeech-spelt':
-            phrase = 'A O N A C H'
-            return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
-        if phrase_name=='fwhisper-tiny-greedy3-librispeech':
-            phrase = 'tocologist'
-            return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
-        if phrase_name=='fwhisper-tiny-greedy2k-librispeech':
-            phrase = 'luctiferous'
-            return ' '.join(phrase.split()[:self.attack_args.num_greedy_phrase_words])
-    
-    
-    def eval_uni_attack(self, data, adv_phrase='', cache_dir=None, force_run=False, do_tqdm=False):
+    def __init__(self, attack_args, model, src_lang='english', tgt_lang='french'):
+        BaseAttacker.__init__(self, attack_args, model)
+        self.src_lang = src_lang
+        self.tgt_lang = tgt_lang
+
+    def eval_uni_attack(self, data, adv_phrase='', cache_dir=None, force_run=False, do_tqdm=False, perf=False, max_new_tokens=512):
         '''
             Generates predictions with adv_phrase (saves to cache)
             Computes the (negative average sequence length) = -1*mean(len(prediction))
+
+            max_new_tokens limited when training attack
         '''
 
         if cache_dir is not None:
@@ -45,13 +35,13 @@ class BaseAttacker():
         hyps = []
         if do_tqdm:
             for sample in tqdm(data):
-                prompt = #TODO
-                hyp = self.model.predict(prompt)
+                prompt = self._prep_prompt(sample, adv_phrase=adv_phrase)
+                hyp = self.model.predict(prompt, max_new_tokens=max_new_tokens).split('\n')[0] # often notes after translation to not be included
                 hyps.append(hyp)
         else:
             for sample in data:
-                prompt = #TODO
-                hyp = self.model.predict(prompt)
+                prompt = self._prep_prompt(sample, adv_phrase=adv_phrase)
+                hyp = self.model.predict(prompt, max_new_tokens=max_new_tokens).split('\n')[0]
                 hyps.append(hyp)
         nsl = eval_neg_seq_len(hyps)
 
@@ -59,4 +49,16 @@ class BaseAttacker():
             with open(fpath, 'w') as f:
                 json.dump(hyps, f)
         
+        if perf:
+            refs = [d['tgt_sentence'] for d in data]
+            bleu_score = eval_bleu(hyps, refs)
+            return {'nsl':nsl, 'bleu':bleu_score}
         return nsl
+    
+    def _prep_prompt(self, sample, adv_phrase=''):
+        prompt = (
+            f"Give only the {self.tgt_lang} translation of:\n\n"
+            f"{sample['src_sentence']} {adv_phrase}\n\n"
+            # f"Only give the translated {self.tgt_lang} sentence.\n"
+        )
+        return prompt
