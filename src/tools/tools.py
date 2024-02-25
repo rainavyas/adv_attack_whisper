@@ -36,7 +36,7 @@ def eval_neg_seq_len(hyps):
     nlens = 0
     for hyp in hyps:
         nlens += (len(hyp.split()))
-    return nlens/len(hyps)
+    return (-1)*nlens/len(hyps)
 
 def eval_bleu(hyps, refs):
     '''
