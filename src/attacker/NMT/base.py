@@ -36,12 +36,12 @@ class NMTBaseAttacker(BaseAttacker):
         if do_tqdm:
             for sample in tqdm(data):
                 prompt = self._prep_prompt(sample, adv_phrase=adv_phrase)
-                hyp = self.model.predict(prompt, max_new_tokens=max_new_tokens).split('\n')[0] # often notes after translation to not be included
+                hyp = self._clean_output(self.model.predict(prompt, max_new_tokens=max_new_tokens))
                 hyps.append(hyp)
         else:
             for sample in data:
                 prompt = self._prep_prompt(sample, adv_phrase=adv_phrase)
-                hyp = self.model.predict(prompt, max_new_tokens=max_new_tokens).split('\n')[0]
+                hyp = self._clean_output(self.model.predict(prompt, max_new_tokens=max_new_tokens))
                 hyps.append(hyp)
         nsl = eval_neg_seq_len(hyps)
 
@@ -59,6 +59,13 @@ class NMTBaseAttacker(BaseAttacker):
         prompt = (
             f"Give only the {self.tgt_lang} translation of:\n\n"
             f"{sample['src_sentence']} {adv_phrase}\n\n"
-            # f"Only give the translated {self.tgt_lang} sentence.\n"
+            f"Only give the translated {self.tgt_lang} sentence.\n"
         )
         return prompt
+    
+    def _clean_output(self, text):
+        '''
+        Keep only relevant part of translation - currently designed for gemma (will need to make this model specific later)
+        '''
+        text = text.split('\n')[-1]
+        return text

@@ -42,32 +42,37 @@ if __name__ == "__main__":
     print(device)
 
     # load training data
-    data, _ = load_data(core_args)
+    data, _ = load_data(core_args, attack_method=attack_args.attack_method)
 
     # load model
     model = load_model(core_args, device=device)
 
-    # load the vocab
-    fpath = 'experiments/words.txt'
-    if os.path.isfile(fpath):
-        with open(fpath, 'r') as f:
-            word_list = json.load(f)
-    else:
-        import nltk
-        nltk.download('words')
-        from nltk.corpus import words
-        word_list = words.words()
-        word_list = list(set(word_list))[:20000]
-
-        with open(fpath, 'w') as f:
-            json.dump(word_list, f)
+    if attack_args.attack_method == 'mel-whitebox':
+        attacker = select_train_attacker(attack_args, core_args, model, device=device)
+        attacker.train_process(data, attack_base_path)
     
-    # select vocab segment if array job
-    if attack_args.array_job_id != -1:
-        start = attack_args.array_job_id*attack_args.array_word_size
-        end = start+attack_args.array_word_size
-        word_list = word_list[start:end]
+    else:
+        # load the vocab
+        fpath = 'experiments/words.txt'
+        if os.path.isfile(fpath):
+            with open(fpath, 'r') as f:
+                word_list = json.load(f)
+        else:
+            import nltk
+            nltk.download('words')
+            from nltk.corpus import words
+            word_list = words.words()
+            word_list = list(set(word_list))[:20000]
 
-    # save scores for each word as the next word in the uni adv phrase
-    attacker = select_train_attacker(attack_args, core_args, model, word_list=word_list)
-    prev, word_2_score = attacker.next_word_score(data, attack_args.prev_phrase, attack_base_path, array_job_id=attack_args.array_job_id)
+            with open(fpath, 'w') as f:
+                json.dump(word_list, f)
+        
+        # select vocab segment if array job
+        if attack_args.array_job_id != -1:
+            start = attack_args.array_job_id*attack_args.array_word_size
+            end = start+attack_args.array_word_size
+            word_list = word_list[start:end]
+
+        # save scores for each word as the next word in the uni adv phrase
+        attacker = select_train_attacker(attack_args, core_args, model, word_list=word_list)
+        prev, word_2_score = attacker.next_word_score(data, attack_args.prev_phrase, attack_base_path, array_job_id=attack_args.array_job_id)

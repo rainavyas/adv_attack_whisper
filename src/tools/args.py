@@ -12,7 +12,7 @@ def core_args():
 def attack_args():
     commandLineParser = argparse.ArgumentParser(allow_abbrev=False)
     # train attack args
-    commandLineParser.add_argument('--attack_method', type=str, default='greedy', choices=['greedy', 'greedy-nmt'], help='Adversarial attack approach for training')
+    commandLineParser.add_argument('--attack_method', type=str, default='greedy', choices=['greedy', 'greedy-nmt', 'mel-whitebox', 'audio-whitebox'], help='Adversarial attack approach for training')
     commandLineParser.add_argument('--prev_phrase', default='', type=str, help='previously learnt adv phrase for greedy approach')
     commandLineParser.add_argument('--array_job_id', type=int, default=-1, help='-1 means not to run as an array job')
     commandLineParser.add_argument('--array_word_size', type=int, default=400, help='number of words to test for each array job in greedy attack')
