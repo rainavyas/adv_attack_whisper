@@ -2,12 +2,16 @@ from .base import BaseAttacker
 from .greedy import GreedyAttacker
 from .NMT.base import NMTBaseAttacker
 from .NMT.greedy import NMTGreedyAttacker
-from .whitebox.soft_prompt import SoftPromptAttack
+from .whitebox.soft_prompt_attack import SoftPromptAttack
+from .whitebox.base import MelBaseAttacker
 
-def select_eval_attacker(attack_args, core_args, model):
+def select_eval_attacker(attack_args, core_args, model, device=None):
     if attack_args.attack_method == 'greedy':
         # Blackbox ASR atttack
         return BaseAttacker(attack_args, model)
+    elif attack_args.attack_method == 'mel-whitebox':
+        # Whitebox ASR Mel Softprompt attack
+        return MelBaseAttacker(attack_args, model, device)
     elif attack_args.attack_method == 'greedy-nmt':
         # Blackbox NMT atttack
         dname = core_args.data_name
@@ -20,6 +24,7 @@ def select_train_attacker(attack_args, core_args, model, word_list=None, device=
         # Blackbox ASR greedy atttack
         return GreedyAttacker(attack_args, model, word_list)
     elif attack_args.attack_method == 'mel-whitebox':
+        # Whitebox ASR Mel Softprompt attack
         return SoftPromptAttack(attack_args, model, device)
     elif attack_args.attack_method == 'greedy-nmt':
         # Blackbox NMT atttack

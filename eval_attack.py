@@ -9,7 +9,7 @@ import numpy as np
 
 from src.tools.tools import get_default_device, set_seeds
 from src.tools.args import core_args, attack_args
-from src.tools.saving import base_path_creator, attack_base_path_creator_eval
+from src.tools.saving import base_path_creator, attack_base_path_creator_eval, attack_base_path_creator_train
 from src.data.load_data import load_data
 from src.models.load_model import load_model
 from src.attacker.selector import select_eval_attacker
@@ -38,8 +38,8 @@ if __name__ == "__main__":
         device = torch.device('cpu')
     else:
         device = get_default_device(core_args.gpu_id)
-    
     print(device)
+
     # Load the data
     train_data, test_data = load_data(core_args)
     if attack_args.eval_train:
@@ -49,22 +49,43 @@ if __name__ == "__main__":
     model = load_model(core_args, device=device)
 
     # load attacker for evaluation
-    attacker = select_eval_attacker(attack_args, core_args, model)
+    attacker = select_eval_attacker(attack_args, core_args, model, device=device)
 
     # evaluate
 
-    # 1) No attack
-    if not attack_args.not_none:
-        print('No attack')
-        result = attacker.eval_uni_attack(test_data, adv_phrase='', cache_dir=base_path, force_run=attack_args.force_run, do_tqdm=True, perf=True)
+    if attack_args.attack_method == 'mel-whitebox':
+        # Mel softprompt attack
+
+        softprompt_model_dir = f'{attack_base_path_creator_train(attack_args, base_path)}/softprompt_models'
+
+        # 1) No attack
+        if not attack_args.not_none:
+            print('No attack')
+            result = attacker.eval_uni_attack(test_data, softprompt_model_dir=softprompt_model_dir, attack_epoch=-1, cache_dir=attack_base_path, force_run=attack_args.force_run)
+            print(result)
+            print()
+
+        # 2) Attack
+        print('Attack')
+        result = attacker.eval_uni_attack(test_data, softprompt_model_dir=softprompt_model_dir, attack_epoch=attack_args.attack_epoch, cache_dir=attack_base_path, force_run=attack_args.force_run)
         print(result)
         print()
+    
+    else:
+        # greedy word-based blackbox attack
 
-    # 2) Attack
-    print('Attack')
-    result = attacker.eval_uni_attack(test_data, adv_phrase=attacker.adv_phrase, cache_dir=attack_base_path, force_run=attack_args.force_run, do_tqdm=True, perf=True)
-    print(result)
-    print()
+        # 1) No attack
+        if not attack_args.not_none:
+            print('No attack')
+            result = attacker.eval_uni_attack(test_data, adv_phrase='', cache_dir=base_path, force_run=attack_args.force_run, do_tqdm=True, perf=True)
+            print(result)
+            print()
+
+        # 2) Attack
+        print('Attack')
+        result = attacker.eval_uni_attack(test_data, adv_phrase=attacker.adv_phrase, cache_dir=attack_base_path, force_run=attack_args.force_run, do_tqdm=True, perf=True)
+        print(result)
+        print()
 
     
 
