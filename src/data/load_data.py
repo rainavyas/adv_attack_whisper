@@ -4,7 +4,7 @@ import ffmpeg
 from tqdm import tqdm
 
 from .nmt import load_flores
-from .speech import _librispeech
+from .speech import _librispeech, _tedlium, _mgb, _artie
 
 
 def load_data(core_args, attack_method='greedy'):
@@ -16,7 +16,17 @@ def load_data(core_args, attack_method='greedy'):
                         'ref':      <Reference transcription>,
                     }
     '''
+    if core_args.data_name == 'tedlium':
+        return None, _tedlium()
+
+    if core_args.data_name == 'mgb':
+        return None, _mgb()
+
+    if core_args.data_name == 'artie':
+        return None, _artie()
+
     if core_args.data_name == 'librispeech':
+        # Note that librispeech data dev split used for training attacks
 
         #blackbox attack
         if 'greedy' in attack_method:

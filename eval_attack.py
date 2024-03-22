@@ -24,8 +24,12 @@ if __name__ == "__main__":
     print(attack_args)
     
     set_seeds(core_args.seed)
-    base_path = base_path_creator(core_args)
-    attack_base_path = attack_base_path_creator_eval(attack_args, base_path)
+    if not attack_args.transfer:
+        base_path = base_path_creator(core_args)
+        attack_base_path = attack_base_path_creator_eval(attack_args, base_path)
+    else:
+        base_path = None
+        attack_base_path = None
 
     # Save the command run
     if not os.path.isdir('CMDs'):
@@ -56,7 +60,10 @@ if __name__ == "__main__":
     if attack_args.attack_method == 'mel-whitebox':
         # Mel softprompt attack
 
-        softprompt_model_dir = f'{attack_base_path_creator_train(attack_args, base_path)}/softprompt_models'
+        if not attack_args.transfer:
+            softprompt_model_dir = f'{attack_base_path_creator_train(attack_args, base_path)}/softprompt_models'
+        else:
+            softprompt_model_dir = attack_args.softprompt_model_dir
 
         # 1) No attack
         if not attack_args.not_none:
@@ -67,7 +74,7 @@ if __name__ == "__main__":
 
         # 2) Attack
         print('Attack')
-        result = attacker.eval_uni_attack(test_data, softprompt_model_dir=softprompt_model_dir, attack_epoch=attack_args.attack_epoch, cache_dir=attack_base_path, force_run=attack_args.force_run)
+        result = attacker.eval_uni_attack(test_data, softprompt_model_dir=softprompt_model_dir, attack_epoch=attack_args.attack_epoch, k_scale=attack_args.k_scale, cache_dir=attack_base_path, force_run=attack_args.force_run)
         print(result)
         print()
     

@@ -40,7 +40,7 @@ class MelBaseAttacker():
         mel = pad_or_trim(mel, N_FRAMES)
         return mel
     
-    def eval_uni_attack(self, data, softprompt_model_dir=None, attack_epoch=-1, cache_dir=None, force_run=False):
+    def eval_uni_attack(self, data, softprompt_model_dir=None, attack_epoch=-1, k_scale=1, cache_dir=None, force_run=False):
         '''
             Generates transcriptions with softprompt_model learnt softprompts (saves to cache)
             Computes the (negative average sequence length) = -1*mean(len(prediction))
@@ -50,7 +50,10 @@ class MelBaseAttacker():
                 -1 indicates that no-attack should be evaluated
         '''
         # check for cache
-        fpath = f'{cache_dir}/epoch-{attack_epoch}_predictions.json'
+        if k_scale > 1:
+            fpath = f'{cache_dir}/epoch-{attack_epoch}_k{k_scale}_predictions.json'
+        else:
+            fpath = f'{cache_dir}/epoch-{attack_epoch}_predictions.json'
         if os.path.isfile(fpath) and not force_run:
             with open(fpath, 'r') as f:
                 hyps = json.load(f)
@@ -70,11 +73,12 @@ class MelBaseAttacker():
         hyps = []
         for sample in tqdm(data):
             with torch.no_grad():
-                hyp = self.softprompt_model.transcribe(self.whisper_model, sample['audio'], do_mel_attack=do_mel_attack)
+                hyp = self.softprompt_model.transcribe(self.whisper_model, sample['audio'], do_mel_attack=do_mel_attack, k_scale=k_scale)
             hyps.append(hyp)
         nsl = eval_neg_seq_len(hyps)
 
-        with open(fpath, 'w') as f:
-            json.dump(hyps, f)
+        if cache_dir is not None:
+            with open(fpath, 'w') as f:
+                json.dump(hyps, f)
 
         return nsl

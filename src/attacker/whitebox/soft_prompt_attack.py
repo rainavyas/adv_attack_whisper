@@ -55,6 +55,10 @@ class SoftPromptAttack(MelBaseAttacker):
             loss.backward()
             self.optimizer.step()
 
+            if self.attack_args.clip_mel:
+                with torch.no_grad():  
+                    self.softprompt_model.softprompt.clamp_(max=self.attack_args.clip_mel_val)
+
             # record loss
             losses.update(loss.item(), mels.size(0))
             if i % print_freq == 0:
@@ -77,25 +81,26 @@ class SoftPromptAttack(MelBaseAttacker):
         return dl
 
 
-    def train_process(self, train_data, cache_dir, max_epochs=6, bs=16):
+    def train_process(self, train_data, cache_dir):
         set_seeds(1)
 
         fpath = f'{cache_dir}/softprompt_models'
         if not os.path.isdir(fpath):
             os.mkdir(fpath)
 
-        train_dl = self._prep_dl(train_data, bs=bs, shuffle=True)
+        train_dl = self._prep_dl(train_data, bs=self.attack_args.bs, shuffle=True)
 
-        for epoch in range(max_epochs):
+        for epoch in range(self.attack_args.max_epochs):
             # train for one epoch
             print('current lr {:.5e}'.format(self.optimizer.param_groups[0]['lr']))
             self.train_step(train_dl, epoch)
 
-            # save model at this epoch
-            if not os.path.isdir(f'{fpath}/epoch{epoch+1}'):
-                os.mkdir(f'{fpath}/epoch{epoch+1}')
-            state = self.softprompt_model.state_dict()
-            torch.save(state, f'{fpath}/epoch{epoch+1}/model.th')
+            if epoch==self.attack_args.max_epochs-1 or (epoch+1)%self.attack_args.save_freq==0:
+                # save model at this epoch
+                if not os.path.isdir(f'{fpath}/epoch{epoch+1}'):
+                    os.mkdir(f'{fpath}/epoch{epoch+1}')
+                state = self.softprompt_model.state_dict()
+                torch.save(state, f'{fpath}/epoch{epoch+1}/model.th')
 
 
 

@@ -7,6 +7,7 @@ from tqdm import tqdm
 import numpy as np
 from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 import tqdm
+from math import log
 
 from src.tools.tools import set_seeds, AverageMeter
 from whisper.decoding import DecodingOptions, DecodingResult
@@ -78,6 +79,7 @@ class SoftPromptModelWrapper(nn.Module):
         audio: Union[str, np.ndarray, torch.Tensor],
         *,
         do_mel_attack = True,
+        k_scale = 1, # scale the mel-vector down by k to make it more imperceptible
         verbose: Optional[bool] = None,
         temperature: Union[float, Tuple[float, ...]] = (0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
         compression_ratio_threshold: Optional[float] = 2.4,
@@ -117,9 +119,9 @@ class SoftPromptModelWrapper(nn.Module):
         content_duration = float(content_frames * HOP_LENGTH / SAMPLE_RATE)
 
         if do_mel_attack:
-            # prepend softprompt adversarial vectors
+            # prepend softprompt adversarial vectors (scaled by k_scale)
             mel = mel[:,:-self.num_vectors]
-            mel = torch.cat((self.softprompt, mel), dim=1)
+            mel = torch.cat((self.softprompt-log(k_scale), mel), dim=1)
 
         language = 'en'
         task = 'transcribe'
