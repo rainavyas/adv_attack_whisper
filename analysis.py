@@ -33,8 +33,12 @@ if __name__ == "__main__":
     print(attack_args)
     print(analysis_args)
 
-    base_path = base_path_creator(core_args)
-    attack_base_path = attack_base_path_creator_eval(attack_args, base_path)
+    if not attack_args.transfer:
+        base_path = base_path_creator(core_args)
+        attack_base_path = attack_base_path_creator_eval(attack_args, base_path)
+    else:
+        base_path = None
+        attack_base_path = None
 
 
     # Save the command run
@@ -58,7 +62,10 @@ if __name__ == "__main__":
 
     # extract the softprompt model attack mel vectors
     softprompt_model = attacker.softprompt_model
-    softprompt_model_dir = f'{attack_base_path_creator_train(attack_args, base_path)}/softprompt_models'
+    if not attack_args.transfer:
+        softprompt_model_dir = f'{attack_base_path_creator_train(attack_args, base_path)}/softprompt_models'
+    else:
+        softprompt_model_dir = attack_args.softprompt_model_dir
     softprompt_model.load_state_dict(torch.load(f'{softprompt_model_dir}/epoch{attack_args.attack_epoch}/model.th'))
 
     log_adv_mel = softprompt_model.softprompt.cpu().detach()
@@ -91,7 +98,10 @@ if __name__ == "__main__":
 
     if analysis_args.compare_with_audio:
         ax.set_xlim(right=3)
-        save_path = f'{attack_base_path}/comparison_spectrogram{add_for_k}.png'
+        if attack_args.transfer:
+            save_path = 'experiments/transfer_spectrogram.png'
+        else:
+            save_path = f'{attack_base_path}/comparison_spectrogram{add_for_k}.png'
     else:
         save_path = f'{attack_base_path}/spectrogram{add_for_k}.png'
     fig.savefig(save_path, bbox_inches='tight')
