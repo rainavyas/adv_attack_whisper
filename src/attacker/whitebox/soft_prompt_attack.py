@@ -23,16 +23,24 @@ class SoftPromptAttack(MelBaseAttacker):
 
     def _loss(self, logits):
         '''
-        The average negative probability of the end of transcript token
+        The (average) negative log probability of the end of transcript token
 
         logits: Torch.tensor [batch x vocab_size]
         '''
         eot_id = self.tokenizer.eot
 
         sf = nn.Softmax(dim=1)
-        probs = sf(logits)
-        eot_probs = probs[:,eot_id].squeeze()
+        log_probs = torch.log(sf(logits))
+        eot_probs = log_probs[:,eot_id].squeeze()
         return -1*torch.mean(eot_probs)
+    
+    # def _regularization(self, softprompt):
+    #     '''
+    #         Regularization to ensure temporal smoothness of the adversarial softprompt vectors
+    #     '''
+    #     weighting = 0.1
+    #     return weighting*torch.sum(torch.abs(torch.diff(softprompt)))
+
 
     def train_step(self, train_loader, epoch, print_freq=25):
         '''
@@ -48,7 +56,10 @@ class SoftPromptAttack(MelBaseAttacker):
 
             # Forward pass
             logits = self.softprompt_model(mels, self.whisper_model)[:,-1,:].squeeze(dim=1)
-            loss = self._loss(logits) # check logits are in correct shape for _loss method
+            loss_main = self._loss(logits)
+            # loss_reg =  self._regularization(self.softprompt_model.softprompt)
+            # loss = loss_main + loss_reg
+            loss = loss_main
 
             # Backward pass and update
             self.optimizer.zero_grad()

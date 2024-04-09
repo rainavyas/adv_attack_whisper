@@ -18,6 +18,10 @@ def attack_base_path_creator_train(attack_args, path='.', create=True):
 
 def attack_base_path_creator_eval(attack_args, path='.', create=True):
     path = next_dir(path, 'attack_eval', create=create)
+    if attack_args.task != 'transcribe':
+        path = next_dir(path, attack_args.task, create=create)
+    if attack_args.language != 'en':
+        path = next_dir(path, attack_args.language, create=create)
     if 'greedy' in attack_args.attack_phrase:
         path = next_dir(path, attack_args.attack_phrase, create=create)
         path = next_dir(path, f'num_words-{attack_args.num_greedy_phrase_words}', create=create)

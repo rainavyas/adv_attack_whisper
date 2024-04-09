@@ -3,6 +3,8 @@ import argparse
 def core_args():
     commandLineParser = argparse.ArgumentParser(allow_abbrev=False)
     commandLineParser.add_argument('--model_name', type=str, default='whisper-small', help='ASR model')
+    commandLineParser.add_argument('--task', type=str, default='transcribe', choices=['transcribe', 'translate'], help='Whisper task. N.b. translate is only X-en')
+    commandLineParser.add_argument('--language', type=str, default='en', help='Source audio language')
     commandLineParser.add_argument('--gpu_id', type=int, default=0, help='select specific gpu')
     commandLineParser.add_argument('--data_name', type=str, default='librispeech', help='dataset for exps; for flores: flores-english-french')
     commandLineParser.add_argument('--seed', type=int, default=1, help='select seed')
@@ -33,6 +35,8 @@ def attack_args():
     commandLineParser.add_argument('--force_run', action='store_true', help='Do not load from cache')
     commandLineParser.add_argument('--not_none', action='store_true', help='Do not evaluate the none attack')
     commandLineParser.add_argument('--eval_train', action='store_true', help='Evaluate attack on the train split')
+    commandLineParser.add_argument('--task', type=str, default='transcribe', choices=['transcribe', 'translate'], help='Whisper task. N.b. translate is only X-en')
+    commandLineParser.add_argument('--language', type=str, default='en', help='Source audio language')
 
     # eval attack args for attack transferability
     commandLineParser.add_argument('--transfer', action='store_true', help='Indicate it is a transferability attack (across model or dataset) for mel whitebox attack')

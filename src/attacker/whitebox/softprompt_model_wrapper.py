@@ -108,7 +108,7 @@ class SoftPromptModelWrapper(nn.Module):
         dtype = torch.float16 if decode_options.get("fp16", True) else torch.float32
         if dtype == torch.float32:
             decode_options["fp16"] = False
-        decode_options["language"] = "en"
+        decode_options["language"] = whisper_model.language
         
         mel = log_mel_spectrogram(audio, whisper_model.model.dims.n_mels, padding=N_SAMPLES).to(self.device)
         # Modify content frames to account for softprompt vectors
@@ -123,8 +123,8 @@ class SoftPromptModelWrapper(nn.Module):
             mel = mel[:,:-self.num_vectors]
             mel = torch.cat((self.softprompt-log(k_scale), mel), dim=1)
 
-        language = 'en'
-        task = 'transcribe'
+        language = whisper_model.language
+        task = whisper_model.task
 
         if isinstance(clip_timestamps, str):
             clip_timestamps = [

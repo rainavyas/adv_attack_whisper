@@ -24,7 +24,7 @@ class MelBaseAttacker():
     def __init__(self, attack_args, model, device):
         self.attack_args = attack_args
         self.whisper_model = model # assume it is a whisper model
-        self.tokenizer = get_tokenizer(self.whisper_model.model.is_multilingual, num_languages=self.whisper_model.model.num_languages, task="trancribe")
+        self.tokenizer = get_tokenizer(self.whisper_model.model.is_multilingual, num_languages=self.whisper_model.model.num_languages, task=self.whisper_model.task)
         self.device = device
         # model wrapper with softprompting ability in mel-vector space
         self.softprompt_model = SoftPromptModelWrapper(self.tokenizer, device=device).to(device)
